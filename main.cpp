@@ -14,6 +14,8 @@ public:
 	int health;
 	int attack;
 	int defense;
+	int row;
+	int col;
 
 	Character(string n, int h, int a, int d)
 	{
@@ -21,6 +23,8 @@ public:
 		health = h;
 		attack = a;
 		defense = d;
+		row = 1; // Kezdő pozíció sor indexe
+		col = 1; // Kezdő pozíció oszlop indexe
 	}
 
 	void printStats()
@@ -58,13 +62,24 @@ public:
 	Enemy(string n, int h, int a, int d) : Character(n, h, a, d) {}
 };
 
-void drawMaze(char maze[MAX_ROWS][MAX_COLS])
+void drawMaze(char maze[MAX_ROWS][MAX_COLS], Character player, Enemy enemy)
 {
 	for (int i = 0; i < MAX_ROWS; i++)
 	{
 		for (int j = 0; j < MAX_COLS; j++)
 		{
-			cout << maze[i][j];
+			if (i == player.row && j == player.col)
+			{
+				cout << "P"; // Játékos karakter
+			}
+			else if (i == enemy.row && j == enemy.col)
+			{
+				cout << "E"; // Ellenség karakter
+			}
+			else
+			{
+				cout << maze[i][j];
+			}
 		}
 		cout << endl;
 	}
@@ -95,31 +110,61 @@ int main()
 	{
 		cout << "---------------------------" << endl;
 		player.printStats();
-		drawMaze(maze);
+		drawMaze(maze, player, enemy);
 
 		int choice;
 		cout << "Choose an action:" << endl;
-		cout << "1. Fight" << endl;
-		cout << "2. Quit" << endl;
+		cout << "1. Move Up" << endl;
+		cout << "2. Move Down" << endl;
+		cout << "3. Move Left" << endl;
+		cout << "4. Move Right" << endl;
+		cout << "5. Quit" << endl;
 		cout << "Enter your choice: ";
 		cin >> choice;
 
+		int newRow = player.row;
+		int newCol = player.col;
+
 		switch (choice)
 		{
-		case 1:
+		case 1: // Move Up
+			newRow--;
+			break;
+		case 2: // Move Down
+			newRow++;
+			break;
+		case 3: // Move Left
+			newCol--;
+			break;
+		case 4: // Move Right
+			newCol++;
+			break;
+		case 5: // Quit
+			cout << "Game over. You quit the game." << endl;
+			return 0;
+		default:
+			cout << "Invalid choice. Try again." << endl;
+			continue;
+		}
+
+		if (maze[newRow][newCol] != '#')
 		{
-			int playerDamage = player.calculateDamage();
-			int enemyDamage = enemy.calculateDamage();
+			player.row = newRow;
+			player.col = newCol;
+		}
 
-			cout << "Player attacks the enemy for " << playerDamage << " damage." << endl;
-			enemy.takeDamage(playerDamage);
-			if (!enemy.isAlive())
-			{
-				cout << "Enemy defeated!" << endl;
-				// Add logic to reward player with stats points
-				break;
-			}
+		int playerDamage = player.calculateDamage();
+		int enemyDamage = enemy.calculateDamage();
 
+		cout << "Player attacks the enemy for " << playerDamage << " damage." << endl;
+		enemy.takeDamage(playerDamage);
+		if (!enemy.isAlive())
+		{
+			cout << "Enemy defeated!" << endl;
+			// Add logic to reward player with stats points
+		}
+		else
+		{
 			cout << "Enemy attacks the player for " << enemyDamage << " damage." << endl;
 			player.takeDamage(enemyDamage);
 			if (!player.isAlive())
@@ -127,18 +172,6 @@ int main()
 				cout << "You were defeated!" << endl;
 				break;
 			}
-			break;
-		}
-		case 2:
-		{
-			cout << "Game over. You quit the game." << endl;
-			return 0;
-		}
-		default:
-		{
-			cout << "Invalid choice. Try again." << endl;
-			break;
-		}
 		}
 	}
 
